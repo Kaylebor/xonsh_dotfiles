@@ -1,0 +1,75 @@
+$XONSH_SHOW_TRACEBACK = False
+
+$PATH.extend([$HOME + '/.anaconda3/bin'])
+
+$XONSH_COLOR_STYLE = 'monokai'
+$COMPLETIONS_CONFIRM = True
+$XONSH_AUTOPAIR = True
+
+$SSH_AUTH_SOCK='/tmp/ssh-agVZL13989/agent.13989'
+$SSH_AGENT_PID=13990
+
+# Imports commonly-used packages
+import os
+import numpy as np
+import pandas as pd
+import re
+
+# Uses bat for man pages
+$MANPAGER = "sh -c 'col -bx | bat -l man -p'"
+
+# Imports local environment variables (so that they are not checked out on git)
+$LOCALENV = '.localenv'
+if os.path.exists($LOCALENV):
+    source @($LOCALENV)
+del $LOCALENV
+
+#======= XONSH PACKAGE CONFIGURATION =======#
+# Installing missing packages
+$PACKAGES_INSTALLED = [package.split('==')[0] for package in $(xpip list --format freeze).split('\n') if package != '']
+$PACKAGES_TO_INSTALL = ['xonsh-apt-tabcomplete', 'xonsh-autoxsh', 'xontrib-ssh-agent', 'xontrib-schedule', 'xontrib-powerline2']
+$PACKAGES_MISSING = np.setdiff1d($PACKAGES_TO_INSTALL, $PACKAGES_INSTALLED)
+if len($PACKAGES_MISSING) > 0:
+    xpip install @($PACKAGES_MISSING)
+
+# Enabling packages
+$PACKAGES_TO_ENABLE = ['vox', 'autovox', 'jedi', 'mpl']
+$PACKAGES_TO_ENABLE.extend([re.sub(r'^xonsh-|^xontrib-', '', package).replace('-', '_') for package in $PACKAGES_TO_INSTALL])
+if len($PACKAGES_TO_ENABLE) > 0:
+    xontrib load @($PACKAGES_TO_ENABLE)
+
+del $PACKAGES_INSTALLED
+del $PACKAGES_TO_INSTALL
+del $PACKAGES_TO_ENABLE
+del $PACKAGES_MISSING
+#===== END XONSH PACKAGE CONFIGURATION ====#
+
+#===== ASDF CONFIGURATION ====#
+if not os.path.exists($HOME + '/.asdf'):
+    git clone https://github.com/asdf-vm/asdf.git $HOME/.asdf --branch v0.8.0
+
+source-bash $HOME/.asdf/asdf.sh
+$BASH_COMPLETION_CUSTOM_DIR = $XDG_DATA_HOME + '/bash-completion/completions'
+if not os.path.exists($BASH_COMPLETION_CUSTOM_DIR):
+    mkdir -p $BASH_COMPLETION_CUSTOM_DIR
+
+for completion_file in [$HOME + '/.asdf/completions/asdf.bash']:
+    $FILENAME = $BASH_COMPLETION_CUSTOM_DIR + '/' + completion_file.split('/')[-1].split('.')[0]
+    if not os.path.exists($FILENAME):
+        ln -s @(completion_file) $FILENAME
+
+del $BASH_COMPLETION_CUSTOM_DIR
+del $FILENAME
+#===== END ASDF CONFIGURATION ====#
+
+background_services = {
+    # Starts keybase
+    'keybase': {
+        'startup_command_name': 'run_keybase',
+        'startup_command_options': '-g',
+        'backgound_command_name': 'keybase'
+    }
+}
+for service, conditions in background_services.items():
+    if len($(which @(conditions['startup_command_name']))) > 0 and len($(pgrep @(conditions['backgound_command_name']))) == 0:
+        bash -c @(conditions['startup_command_name'] + ' ' + conditions['startup_command_options']) > /dev/null 2>&1
