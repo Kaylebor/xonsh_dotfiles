@@ -1,7 +1,5 @@
 $XONSH_SHOW_TRACEBACK = False
 
-$PATH.extend([$HOME + '/.asdf/shims'])
-
 $XONSH_COLOR_STYLE = 'monokai'
 $COMPLETIONS_CONFIRM = True
 $XONSH_AUTOPAIR = True
@@ -24,13 +22,11 @@ $PIP_PACKAGES_TO_INSTALL = ['jedi']
 $PACKAGES_MISSING_LOCAL = [package for package in $PIP_PACKAGES_TO_INSTALL if not package in $PACKAGES_INSTALLED_LOCAL]
 # Installs missing packages
 if len($PACKAGES_MISSING_LOCAL) > 0:
-    print($PACKAGES_MISSING_LOCAL)
     pip install @($PACKAGES_MISSING_LOCAL)
 
 $XONTRIB_PACKAGES_TO_INSTALL = ['xonsh-apt-tabcomplete', 'xonsh-autoxsh', 'xontrib-ssh-agent', 'xontrib-schedule', 'xontrib-powerline2']
 $PACKAGES_MISSING = [package for package in $XONTRIB_PACKAGES_TO_INSTALL if not package in $PACKAGES_INSTALLED]
 if len($PACKAGES_MISSING) > 0:
-    print($PACKAGES_MISSING)
     xpip install @($PACKAGES_MISSING)
 
 # Enabling packages
@@ -46,6 +42,9 @@ del $PACKAGES_TO_ENABLE
 del $PACKAGES_MISSING
 del $PACKAGES_MISSING_LOCAL
 #===== END XONSH PACKAGE CONFIGURATION ====#
+
+#===== SETUP ASDF =====#
+source-bash @($HOME + '/.asdf/asdf.sh')
 
 #===== ALIAS ====#
 aliases['ls'] = 'exa'
