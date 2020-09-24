@@ -1,5 +1,7 @@
 $XONSH_SHOW_TRACEBACK = False
 
+$PATH.extend([$HOME + '/.local/bin'])
+
 $XONSH_COLOR_STYLE = 'monokai'
 $COMPLETIONS_CONFIRM = True
 $XONSH_AUTOPAIR = True
