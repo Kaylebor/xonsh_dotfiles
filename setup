@@ -91,7 +91,7 @@ source $asdf_dir/asdf.sh
 
 # Installing asdf plugins
 if [[ $reinstall_asdf -eq 1 ]]; then
-  while IFS= read -r line; do
+  while IFS= read -r plugin; do
     asdf plugin add ${plugin%% *}
   done < $DIR/.tool-versions
 fi
