@@ -1,4 +1,4 @@
-# Project Title
+# My Xonsh dotfiles
 
 ## Table of Contents
 
