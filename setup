@@ -1,0 +1,138 @@
+#!/bin/bash
+FILES_TO_LINK=(.xonshrc .tool-versions)
+
+cd $(dirname -- "$0")
+DIR="$(pwd)"
+
+Help() {
+  echo "Installs and configures the dotfiles, as seen in README.md"
+  echo "Accepts multiple optional arguments"
+  echo ""
+  echo "Usage: $0 [OPTIONS]"
+  echo "options:"
+  echo "  -h, --help                    displays this message"
+  echo "  -rp, --reinstall-packages     reinstalls asdf packages, if missing or changed; then reinstalls tools on those packages"
+  echo "  -ra, --reinstall-asdf         reinstalls asdf and its plugins, if missing or changed"
+  echo "  --git-email                   configures git email; must be used together with --git-real-name"
+  echo "  --git-real-name               configures git name; must be used together with --git-email"
+  exit $1
+}
+
+for arg in "$@"; do
+  case $arg in
+    -h|--help)
+    Help 0
+    ;;
+    -rp|--reinstall-packages)
+    reinstall_packages=1
+    ;;
+    -ra|--reinstall-asdf)
+    reinstall_asdf=1
+    ;;
+    --git-email)
+    next_email=1
+    ;;
+    --git-real-name)
+    next_name=1
+    ;;
+    *)
+    if [[ $next_email -eq 1 ]]; then
+      unset next_email
+      git_email=$arg
+    elif [[ $next_name -eq 1 ]]; then
+      unset next_name
+      git_real_name=$arg
+    else
+      echo "Error: unkown option $arg"
+      echo ""
+      Help -1
+    fi
+  esac
+done
+
+if [[ $next_email -eq 1 ]]; then
+  echo "Error: --git-email must be followed by the user's email"
+  exit -1
+fi
+if [[ $next_name -eq 1 ]]; then
+  echo "Error: --git-real-name must be followed by the user's name"
+  exit -1
+fi
+
+if [[ (-z $git_email && ! -z $git_real_name) || (! -z $git_email && -z $git_real_name) ]]; then
+  echo "Error: --git-email|--git-real-name -> if one is present, the other must be present too"
+  exit -1
+fi
+
+if [[ ! -z $git_email && ! -z $git_real_name ]]; then
+  cp -r $DIR/.gitconfigs $HOME
+  sed -i "s|\$GIT_EMAIL|$git_email|g" $HOME/.gitconfigs/common
+  sed -i "s|\$GIT_REAL_NAME|$git_real_name|g" $HOME/.gitconfigs/common
+  [[ ! -f $HOME/.gitconfig ]] && touch $HOME/.gitconfig
+  if [[ -z $(grep '\[include\]' $HOME/.gitconfig) ]]; then
+    echo "[include]
+    path = $HOME/.gitconfigs/common" >> $HOME/.gitconfig
+  fi
+fi
+
+mkdir -p "$HOME/.backups"
+
+for file in ${FILES_TO_LINK[@]}; do
+  [[ -e "$HOME/$file" ]] && mv "$HOME/$file" "$HOME/.backups/"
+  ln -s "$DIR/$file" "$HOME/"
+done
+
+# Installing asdf
+if [[ ! -d ${asdf_dir:=$HOME/.asdf} ]]; then
+  git clone https://github.com/asdf-vm/asdf.git $asdf_dir --branch v0.8.0
+  reinstall_asdf=1
+fi
+source $asdf_dir/asdf.sh
+
+# Installing asdf plugins
+if [[ $reinstall_asdf -eq 1 ]]; then
+  while IFS= read -r line; do
+    asdf plugin add ${plugin%% *}
+  done < $DIR/.tool-versions
+fi
+
+# Installing asdf packages
+[[ $reinstall_packages -eq 1 || $reinstall_asdf -eq 1 ]] && asdf install
+
+# Installing Rust packages
+for package in exa hexyl; do
+  [[ $reinstall_packages -eq 1 || ! -f $HOME/.asdf/shims/$package ]] && cargo install --force $package
+done
+[[ $reinstall_packages -eq 1 || ! -f $HOME/.asdf/shims/fd ]] && cargo install --force fd-find # sharkdp/fd
+[[ $reinstall_packages -eq 1 || ! -f $HOME/.asdf/shims/bat ]] && cargo install --force --locked bat # sharkdp/bat
+[[ $reinstall_packages -eq 1 || ! -f $HOME/.asdf/shims/rg ]] && cargo install --force --git https://github.com/BurntSushi/ripgrep ripgrep --features 'pcre2'
+asdf reshim rust
+
+# Installing Node packages
+for package in tldr; do
+  [[ $reinstall_packages -eq 1 || ! -f $HOME/.asdf/shims/$package ]] && yarn global add $package
+done
+asdf reshim nodejs
+
+# Installing completions
+mkdir -p ${bash_completion_custom_dir:=${XDG_DATA_HOME:=$HOME/.local/share}/bash-completion/completions}
+for completion_file in $asdf_dir/completions/asdf.bash; do
+  filename=$bash_completion_custom_dir/${completion_file##*/}
+  [[ ! -f $filename ]] && ln -s $completion_file $filename
+done
+
+# Installing neovim configuration
+init_vim_path=$HOME/.config/nvim/init.vim
+if [[ ! -f $init_vim_path ]]; then
+  reinstall_packages=1
+  mkdir -p ${init_vim_path%/*}
+  [[ -f $init_vim_path ]] && mv $init_vim_path $HOME/.backups/
+  ln -s $DIR/init.vim $init_vim_path
+fi
+if [[ $reinstall_packages -eq 1 ]]; then
+  plug_vim_path=${XDG_DATA_HOME}/nvim/site/autoload/plug.vim
+  mkdir -p ${plug_vim_path%/*}
+  curl -fLo $plug_vim_path --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+fi
+
+echo "Finished; you may have to reopen the shell, or source .xonshrc again"

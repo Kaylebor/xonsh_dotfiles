@@ -1,0 +1,8 @@
+[core]
+  editor = code -w
+  eol = lf
+  autocrlf = input
+  pager = bat -l gitconfig
+[user]
+  email = $GIT_EMAIL
+  name = $GIT_REAL_NAME
