@@ -53,8 +53,9 @@ For additional, custom configuration, create a new file called `.localenv` in th
 
 *OPTIONAL* In order to use xonsh as default shell, `chsh` is not recommended; instead, add something like this to `.bashrc`:
 ```
-XONSH_PATH=/path/to/xonsh
+XONSH_PATH=$HOME/.local/bin/xonsh # Change if needed
 if [[ -t 1 && -x $XONSH_PATH ]]; then
+    source $HOME/.xonsh_install/.env/bin/activate # Path where virtualenv was set, if xonsh was installed with pip and venv
     exec $XONSH_PATH
 fi
 ```
@@ -66,5 +67,3 @@ fi
 Curl is also needed; if not present, check your distro package repositories.
 
 For erlang, [make sure to install the required dependencies](https://github.com/asdf-vm/asdf-erlang#before-asdf-install)
-
-For nodejs, [the team's OpenPGP keys must be imported](https://github.com/asdf-vm/asdf-nodejs#install)
