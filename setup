@@ -94,6 +94,7 @@ if [[ $reinstall_asdf -eq 1 ]]; then
   while IFS= read -r plugin; do
     asdf plugin add ${plugin%% *}
   done < $DIR/.tool-versions
+  bash -c '${ASDF_DATA_DIR:=$HOME/.asdf}/plugins/nodejs/bin/import-release-team-keyring'
 fi
 
 # Installing asdf packages
