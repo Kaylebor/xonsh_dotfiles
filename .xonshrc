@@ -17,17 +17,17 @@ $MANPAGER = "sh -c 'col -bx | bat -l man -p'"
 #======= XONSH PACKAGE CONFIGURATION =======#
 # Installing missing packages
 $PACKAGES_INSTALLED = [package.split('==')[0] for package in $(pip list --format freeze).split('\n') if package != '']
-$PACKAGES_INSTALLED_LOCAL = [package.split('==')[0] for package in $(pip list -l --format freeze).split('\n') if package != '']
 $PIP_PACKAGES_TO_INSTALL = ['jedi']
-$PACKAGES_MISSING_LOCAL = [package for package in $PIP_PACKAGES_TO_INSTALL if not package in $PACKAGES_INSTALLED_LOCAL]
+$PIP_PACKAGES_MISSING = [package for package in $PIP_PACKAGES_TO_INSTALL if not package in $PACKAGES_INSTALLED]
 # Installs missing packages
-if len($PACKAGES_MISSING_LOCAL) > 0:
-    pip install @($PACKAGES_MISSING_LOCAL)
+if len($PIP_PACKAGES_MISSING) > 0:
+    pip install @($PIP_PACKAGES_MISSING)
 
 $XONTRIB_PACKAGES_TO_INSTALL = ['xonsh-apt-tabcomplete', 'xonsh-autoxsh', 'xontrib-ssh-agent', 'xontrib-schedule', 'xontrib-powerline2']
-$PACKAGES_MISSING = [package for package in $XONTRIB_PACKAGES_TO_INSTALL if not package in $PACKAGES_INSTALLED]
-if len($PACKAGES_MISSING) > 0:
-    xpip install @($PACKAGES_MISSING)
+$XONTRIB_PACKAGES_MISSING = [package for package in $XONTRIB_PACKAGES_TO_INSTALL if not package in $PACKAGES_INSTALLED]
+if len($XONTRIB_PACKAGES_MISSING) > 0:
+    print("Updating xonfig; may require sudo...")
+    xpip install @($XONTRIB_PACKAGES_MISSING)
 
 # Enabling packages
 $PACKAGES_TO_ENABLE = ['vox', 'autovox', 'jedi', 'mpl']
@@ -36,11 +36,10 @@ if len($PACKAGES_TO_ENABLE) > 0:
     xontrib load @($PACKAGES_TO_ENABLE)
 
 del $PACKAGES_INSTALLED
-del $PACKAGES_INSTALLED_LOCAL
 del $XONTRIB_PACKAGES_TO_INSTALL
 del $PACKAGES_TO_ENABLE
-del $PACKAGES_MISSING
-del $PACKAGES_MISSING_LOCAL
+del $PIP_PACKAGES_MISSING
+del $XONTRIB_PACKAGES_MISSING
 #===== END XONSH PACKAGE CONFIGURATION ====#
 
 #===== SETUP ASDF =====#
