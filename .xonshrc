@@ -1,6 +1,6 @@
 $XONSH_SHOW_TRACEBACK = False
 
-$PATH.extend([$HOME + '/.anaconda3/bin', $HOME + '/.asdf/shims'])
+$PATH.extend([$HOME + '/.asdf/shims'])
 
 $XONSH_COLOR_STYLE = 'monokai'
 $COMPLETIONS_CONFIRM = True
@@ -11,42 +11,49 @@ $SSH_AGENT_PID=13990
 
 # Imports commonly-used packages
 import os
-import numpy as np
-import pandas as pd
 import re
 
 # Uses bat for man pages
 $MANPAGER = "sh -c 'col -bx | bat -l man -p'"
 
-# Imports local environment variables (so that they are not checked out on git)
-$LOCALENV = '.localenv'
-if os.path.exists($LOCALENV):
-    source @($LOCALENV)
-del $LOCALENV
-
 #======= XONSH PACKAGE CONFIGURATION =======#
 # Installing missing packages
-$PACKAGES_INSTALLED = [package.split('==')[0] for package in $(xpip list --format freeze).split('\n') if package != '']
-$PACKAGES_TO_INSTALL = ['xonsh-apt-tabcomplete', 'xonsh-autoxsh', 'xontrib-ssh-agent', 'xontrib-schedule', 'xontrib-powerline2']
-$PACKAGES_MISSING = np.setdiff1d($PACKAGES_TO_INSTALL, $PACKAGES_INSTALLED)
+$PACKAGES_INSTALLED = [package.split('==')[0] for package in $(pip list --format freeze).split('\n') if package != '']
+$PACKAGES_INSTALLED_LOCAL = [package.split('==')[0] for package in $(pip list -l --format freeze).split('\n') if package != '']
+$PIP_PACKAGES_TO_INSTALL = ['jedi']
+$PACKAGES_MISSING_LOCAL = [package for package in $PIP_PACKAGES_TO_INSTALL if not package in $PACKAGES_INSTALLED_LOCAL]
+# Installs missing packages
+if len($PACKAGES_MISSING_LOCAL) > 0:
+    print($PACKAGES_MISSING_LOCAL)
+    pip install @($PACKAGES_MISSING_LOCAL)
+
+$XONTRIB_PACKAGES_TO_INSTALL = ['xonsh-apt-tabcomplete', 'xonsh-autoxsh', 'xontrib-ssh-agent', 'xontrib-schedule', 'xontrib-powerline2']
+$PACKAGES_MISSING = [package for package in $XONTRIB_PACKAGES_TO_INSTALL if not package in $PACKAGES_INSTALLED]
 if len($PACKAGES_MISSING) > 0:
+    print($PACKAGES_MISSING)
     xpip install @($PACKAGES_MISSING)
 
 # Enabling packages
 $PACKAGES_TO_ENABLE = ['vox', 'autovox', 'jedi', 'mpl']
-$PACKAGES_TO_ENABLE.extend([re.sub(r'^xonsh-|^xontrib-', '', package).replace('-', '_') for package in $PACKAGES_TO_INSTALL])
+$PACKAGES_TO_ENABLE.extend([re.sub(r'^xonsh-|^xontrib-', '', package).replace('-', '_') for package in $XONTRIB_PACKAGES_TO_INSTALL])
 if len($PACKAGES_TO_ENABLE) > 0:
     xontrib load @($PACKAGES_TO_ENABLE)
 
 del $PACKAGES_INSTALLED
-del $PACKAGES_TO_INSTALL
+del $PACKAGES_INSTALLED_LOCAL
+del $XONTRIB_PACKAGES_TO_INSTALL
 del $PACKAGES_TO_ENABLE
 del $PACKAGES_MISSING
+del $PACKAGES_MISSING_LOCAL
 #===== END XONSH PACKAGE CONFIGURATION ====#
 
 #===== ALIAS ====#
 aliases['ls'] = 'exa'
 #===== END ALIAS ====#
+
+# Imports local environment variables (so that they are not checked out on git)
+if os.path.exists('.localenv'):
+    source @('.localenv')
 
 background_services = {
     # Starts keybase

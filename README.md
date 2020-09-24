@@ -55,7 +55,7 @@ For additional, custom configuration, create a new file called `.localenv` in th
 ```
 XONSH_PATH=$HOME/.local/bin/xonsh # Change if needed
 if [[ -t 1 && -x $XONSH_PATH ]]; then
-    source $HOME/.xonsh_install/.env/bin/activate # Path where virtualenv was set, if xonsh was installed with pip and venv
+    source $HOME/.xonsh_venv/bin/activate # Path where virtualenv was set, if xonsh was installed with pip and venv
     exec $XONSH_PATH
 fi
 ```
@@ -63,6 +63,8 @@ fi
 ### Prerequisites <a name = "prerequisites"></a>
 
 [Install xonsh](https://xon.sh/installation.html).
+
+**IF INSTALLING XONSH WITH PIP**: Recommended to create a virtual environment with access to global packages first, like `python3 -m venv --system-site-packages .xonsh_venv`
 
 Curl is also needed; if not present, check your distro package repositories.
 
