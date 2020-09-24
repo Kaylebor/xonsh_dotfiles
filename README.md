@@ -45,6 +45,8 @@ Finally, run the [setup file](setup).
 bash setup.sh
 ```
 
+The first time it may take a while, since some steps involve compiling source code.
+
 `setup` contains some additional, optional arguments; check `./setup --help` for more info
 
 For additional, custom configuration, create a new file called `.localenv` in the `xonsh_dotfiles` folder, with Xonsh syntax.
@@ -62,3 +64,7 @@ fi
 [Install xonsh](https://xon.sh/installation.html).
 
 Curl is also needed; if not present, check your distro package repositories.
+
+For erlang, [make sure to install the required dependencies](https://github.com/asdf-vm/asdf-erlang#before-asdf-install)
+
+For nodejs, [the team's OpenPGP keys must be imported](https://github.com/asdf-vm/asdf-nodejs#install)
