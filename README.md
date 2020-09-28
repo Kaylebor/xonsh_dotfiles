@@ -37,12 +37,12 @@ cd ~/xonsh_dotfiles
 
 You may need to change file permissions:
 ```
-chmod +x setup.sh
+chmod +x setup
 ```
 
 Finally, run the [setup file](setup).
 ```
-bash setup.sh
+bash setup
 ```
 
 The first time it may take a while, since some steps involve compiling source code.
