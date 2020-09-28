@@ -50,8 +50,8 @@ aliases['ls'] = 'exa'
 #===== END ALIAS ====#
 
 # Imports local environment variables (so that they are not checked out on git)
-if os.path.exists('.localenv'):
-    source @('.localenv')
+if os.path.exists($HOME + '/.localenv'):
+    source @($HOME + '/.localenv')
 
 background_services = {
     # Starts keybase
