@@ -1,0 +1,2 @@
+# Adding custom types
+--type-add=properties:*.properties

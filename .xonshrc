@@ -16,6 +16,9 @@ import re
 # Uses bat for man pages
 $MANPAGER = "sh -c 'col -bx | bat -l man -p'"
 
+# ripgrep configuration file
+$RIPGREP_CONFIG_PATH = $HOME + "/.ripgreprc"
+
 #======= XONSH PACKAGE CONFIGURATION =======#
 # Installing missing packages
 $PACKAGES_INSTALLED = [package.split('==')[0] for package in $(pip list --format freeze).split('\n') if package != '']

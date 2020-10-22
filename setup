@@ -1,5 +1,5 @@
 #!/bin/bash
-FILES_TO_LINK=(.xonshrc .tool-versions)
+FILES_TO_LINK=(.xonshrc .tool-versions .ripgreprc)
 
 cd $(dirname -- "$0")
 DIR="$(pwd)"
@@ -82,15 +82,28 @@ for file in ${FILES_TO_LINK[@]}; do
   ln -s "$DIR/$file" "$HOME/"
 done
 
+# Installing AsciiDoc
+if [[ $reinstall_packages -eq 1 || ! -f $(which asciidoc) ]]; then
+  [[ -d ${ASCIIDOC_SOURCE_FOLDER:=$HOME/.asciidoc} ]] && rm -rf $ASCIIDOC_SOURCE_FOLDER
+  git clone https://github.com/asciidoc/asciidoc-py3 --branch ${ASCIIDOC_VERSION:-9.0.3} $ASCIIDOC_SOURCE_FOLDER
+  cd $ASCIIDOC_SOURCE_FOLDER
+  autoconf
+  ./configure
+  make
+  sudo make install
+  cd $DIR
+fi
+
 # Installing asdf
-if [[ ! -d ${asdf_dir:=$HOME/.asdf} ]]; then
-  git clone https://github.com/asdf-vm/asdf.git $asdf_dir --branch v0.8.0
+if [[ ! -d ${ASDF_DIR:=$HOME/.asdf} ]]; then
+  git clone https://github.com/asdf-vm/asdf.git $ASDF_DIR --branch ${ASDF_VERSION:-v0.8.0}
   reinstall_asdf=1
 fi
-source $asdf_dir/asdf.sh
+source $ASDF_DIR/asdf.sh
 
 # Installing asdf plugins
 if [[ $reinstall_asdf -eq 1 ]]; then
+  asdf update
   while IFS= read -r plugin; do
     asdf plugin add ${plugin%% *}
   done < $DIR/.tool-versions
@@ -117,7 +130,7 @@ asdf reshim nodejs
 
 # Installing completions
 mkdir -p ${bash_completion_custom_dir:=${XDG_DATA_HOME:=$HOME/.local/share}/bash-completion/completions}
-for completion_file in $asdf_dir/completions/asdf.bash; do
+for completion_file in $ASDF_DIR/completions/asdf.bash; do
   filename=$bash_completion_custom_dir/${completion_file##*/}
   [[ ! -f $filename ]] && ln -s $completion_file $filename
 done
