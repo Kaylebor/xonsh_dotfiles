@@ -22,7 +22,7 @@ $RIPGREP_CONFIG_PATH = $HOME + "/.ripgreprc"
 #======= XONSH PACKAGE CONFIGURATION =======#
 # Installing missing packages
 $PACKAGES_INSTALLED = [package.split('==')[0] for package in $(pip list --format freeze).split('\n') if package != '']
-$PIP_PACKAGES_TO_INSTALL = ['jedi']
+$PIP_PACKAGES_TO_INSTALL = ['jedi', 'python-language-server']
 $PIP_PACKAGES_MISSING = [package for package in $PIP_PACKAGES_TO_INSTALL if not package in $PACKAGES_INSTALLED]
 # Installs missing packages
 if len($PIP_PACKAGES_MISSING) > 0:
