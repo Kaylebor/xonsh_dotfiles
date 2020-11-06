@@ -40,8 +40,18 @@ $PACKAGES_TO_ENABLE.extend([re.sub(r'^xonsh-|^xontrib-', '', package).replace('-
 if len($PACKAGES_TO_ENABLE) > 0:
     xontrib load @($PACKAGES_TO_ENABLE)
 
+
+def update_packages() -> None:
+    """Helper function for quickly updating Xonsh dependencies"""
+    pip install -U @($PIP_PACKAGES_TO_INSTALL)
+    xpip install -U @($XONTRIB_PACKAGES_TO_INSTALL)
+
+def update_xonsh() -> None:
+    """Helper function for quickly updating Xonsh and its dependencies"""
+    pip install -U xonsh
+    update_packages()
+
 del $PACKAGES_INSTALLED
-del $XONTRIB_PACKAGES_TO_INSTALL
 del $PACKAGES_TO_ENABLE
 del $PIP_PACKAGES_MISSING
 del $XONTRIB_PACKAGES_MISSING
